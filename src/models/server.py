@@ -1,10 +1,8 @@
 class Server:
-    def __init__(self, nameServer, startTime, ri, exitTime, available:True):
+    def __init__(self, nameServer, startTime, ri, exitTime, available, exitTimeTotal):
         self.nameServer = nameServer
         self.startTime = startTime
         self.available = available
         self.ri = ri
         self.exitTime = exitTime
-        
-    def statusActal(self):
-        print('SIUUUUU')
+        self.exitTimeTotal = exitTimeTotal
