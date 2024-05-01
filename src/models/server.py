@@ -1,8 +1,10 @@
 class Server:
-    nameServer = "Ventanilla 1"
-    def __init__(self, nameServer):
+    def __init__(self, nameServer, startTime, ri, exitTime, available:True):
         self.nameServer = nameServer
-        self.statusServer = False
+        self.startTime = startTime
+        self.available = available
+        self.ri = ri
+        self.exitTime = exitTime
         
     def statusActal(self):
         print('SIUUUUU')
