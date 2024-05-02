@@ -2,61 +2,65 @@ import math
 import random
 from models.Server import Server
 from models.Patient import Patient
-from models.Doctor import Doctor
 from models.WaitQueue import WaitQueue
 from helpers.generateNames import generateNames
 
 def simulation():
-    activationservice = WaitQueue()
-    attentionservice = WaitQueue()
-    medicos = [Doctor("Dr. García", "Pediatra"), Doctor("Dra. López", "Cardiólogo")]
-    activationServer = Server("Modulo de Activación de Citas", 0, 0, 0)
-    
-    attentionServers = [Server("Modulo 1 - Atención", 0, 0, 0,0), 
-                        Server("Modulo 2 - Atención", 0, 0, 0,0), 
-                        Server("Modulo 3 - Atención", 0, 0, 0,0), 
-                        Server("Modulo 4 - Atención", 0, 0, 0,0)]
-    
-    
-    paciente1 = createPatient(0)
-    paciente2 = createPatient(paciente1.intervalArrivalTime)
-
-    activationservice.addPatient(paciente1)
-    activationservice.addPatient(paciente2)
-    pacientes_en_espera = list(activationservice.patients)
-
-    for paciente in pacientes_en_espera:
-        print(paciente.name)
-        print(paciente.arrivalTime )
-        print(paciente.ri)
-        print(paciente.intervalArrivalTime)
-        print(paciente.leftService)
+    activationQueue = WaitQueue()
+    activationServer = Server("Modulo de Activación de Citas")
         
-        for medico in medicos:
-            if medico.available:
-                activationservice.movePatient(activationservice.patients.index(paciente), attentionservice)
-                medico.available = False
-                print(paciente.name + medico.nameDoctor)
-                break
-            
-    # Simular consulta y liberación de médicos
-    for paciente in attentionservice.patients:
-        for medico in medicos:
-            if medico.nameDoctor == "Dr. García":  # Simular consulta solo con Dr. García
-                medico.available = True
-                
-                attentionservice.movePatient(attentionservice.patients.index(paciente), activationservice)
-
-    print("Simulación completa.")
+    paciente1 = createPatient(0,0)
+    activationQueue.addPatient(paciente1)
+    lastTime = addTimeToServer(activationServer, paciente1.arrivalTime, 0)
     
-def createPatient(previousIAT):
+    paciente2 = createPatient(paciente1.arrivalTime, paciente1.intervalArrivalTime)
+    activationQueue.addPatient(paciente2)
+    lastTime = addTimeToServer(activationServer, paciente2.arrivalTime, lastTime)
+    
+    paciente3 = createPatient(paciente2.arrivalTime, paciente2.intervalArrivalTime)
+    activationQueue.addPatient(paciente3)
+    lastTime = addTimeToServer(activationServer, paciente3.arrivalTime, lastTime)
+    
+
+    timesServer = list(activationServer.times)
+    patients = list(activationQueue.patients)
+    for patient in patients:
+        print('--------------PATIENTS------------------')
+        print(patient.name)
+        print(patient.arrivalTime)
+        print(patient.ri)
+        print(patient.intervalArrivalTime)
+    
+    for time in timesServer:
+        print('--------------SERVER------------------')
+        print(time.startTime)
+        print(time.ri)
+        print(time.exitTime)
+        print(time.exitTimeTotal)
+        
+    
+
+    
+def createPatient(previousAT, previousIAT):
     first_name, second_name = generateNames()
+    arrivalTime = previousAT + previousIAT
     ri = random.random()
     leftService = False if random.random() < 0.95 else True
-    return Patient(first_name + ' ' + second_name, previousIAT, ri, calculateIntervalTime(6, ri), leftService, 1)
+    return Patient(first_name + ' ' + second_name, arrivalTime, ri, calculateIntervalTime(5, ri), leftService, 1)
 
-def calculateIntervalTime(num, ri):
-    return - math.log(1 - ri) / num
+def calculateIntervalTime(const, ri):
+    return - math.log(1 - ri) / const
+
+def addTimeToServer(server, ATPatient, previousETTotal):
+    if(ATPatient == 0):
+        startTime = 0
+    else: 
+        startTime = max(ATPatient, previousETTotal)
+    ri = random.random()
+    exitTime = calculateIntervalTime(6, ri)
+    exitTimeTotal = exitTime + startTime
+    server.addTime(startTime,ri,exitTime,exitTimeTotal)
+    return exitTimeTotal
 
 if __name__ == "__main__":
     simulation()

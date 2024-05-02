@@ -1,0 +1,6 @@
+attentionservice = WaitQueue()
+    activationServer = Server("Modulo de Activación de Citas")
+    attentionServer1 = Server("Modulo 1 - Atención"), 
+    attentionServer2 = Server("Modulo 2 - Atención"), 
+    attentionServer3 = Server("Modulo 3 - Atención"), 
+    attentionServer4 = Server("Modulo 4 - Atención"),
