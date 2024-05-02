@@ -64,4 +64,6 @@ class Simulation:
         return exitTimeTotal
 
 if __name__ == "__main__":
-    Simulation(5)
+    print('Ingrese el numero de pacientes')
+    num = int(input())
+    Simulation(num)
