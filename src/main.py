@@ -46,8 +46,7 @@ class Simulation:
         first_name, second_name = generateNames()
         arrivalTime = previousAT + previousIAT
         ri = random.random()
-        leftService = False if random.random() < 0.95 else True
-        return Patient(first_name + ' ' + second_name, arrivalTime, ri, self.calculateIntervalTime(5, ri), leftService, 1) 
+        return Patient(first_name + ' ' + second_name, arrivalTime, ri, self.calculateIntervalTime(5, ri)) 
 
     def calculateIntervalTime(self, const, ri):
         return -math.log(1 - ri) / const
