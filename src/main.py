@@ -5,62 +5,63 @@ from models.Patient import Patient
 from models.WaitQueue import WaitQueue
 from helpers.generateNames import generateNames
 
-def simulation():
-    activationQueue = WaitQueue()
-    activationServer = Server("Modulo de Activación de Citas")
+class Simulation:
+    def __init__(self, numpatients):
+        self.activationQueue = WaitQueue()
+        self.simulation(numpatients)
         
-    paciente1 = createPatient(0,0)
-    activationQueue.addPatient(paciente1)
-    lastTime = addTimeToServer(activationServer, paciente1.arrivalTime, 0)
-    
-    paciente2 = createPatient(paciente1.arrivalTime, paciente1.intervalArrivalTime)
-    activationQueue.addPatient(paciente2)
-    lastTime = addTimeToServer(activationServer, paciente2.arrivalTime, lastTime)
-    
-    paciente3 = createPatient(paciente2.arrivalTime, paciente2.intervalArrivalTime)
-    activationQueue.addPatient(paciente3)
-    lastTime = addTimeToServer(activationServer, paciente3.arrivalTime, lastTime)
-    
 
-    timesServer = list(activationServer.times)
-    patients = list(activationQueue.patients)
-    for patient in patients:
-        print('--------------PATIENTS------------------')
-        print(patient.name)
-        print(patient.arrivalTime)
-        print(patient.ri)
-        print(patient.intervalArrivalTime)
-    
-    for time in timesServer:
-        print('--------------SERVER------------------')
-        print(time.startTime)
-        print(time.ri)
-        print(time.exitTime)
-        print(time.exitTimeTotal)
+    def simulation(self, numpatients): 
+        activationServer = Server("Modulo de Activación de Citas")
+        lastTime = 0
+        for i in range(numpatients):
+            if(i == 0):
+                patient = self.createPatient(0,0)
+                self.activationQueue.addPatient(patient)
+                lastTime = self.addTimeToServer(activationServer, patient.arrivalTime, 0)
+            else:
+                previousPatient = self.activationQueue.patients[-1]
+                patient = self.createPatient(previousPatient.arrivalTime, previousPatient.intervalArrivalTime)
+                self.activationQueue.addPatient(patient)
+                lastTime = self.addTimeToServer(activationServer, patient.arrivalTime, lastTime)
         
-    
+        
+        timesServer = list(activationServer.times)
+        patients = list(self.activationQueue.patients)
+        for patient in patients:
+            print('--------------PATIENTS------------------')
+            print(patient.name)
+            print(patient.arrivalTime)
+            print(patient.ri)
+            print(patient.intervalArrivalTime)
+        
+        for time in timesServer:
+            print('--------------SERVER------------------')
+            print(time.startTime)
+            print(time.ri)
+            print(time.exitTime)
+            print(time.exitTimeTotal)
+            
+    def createPatient(self, previousAT, previousIAT): 
+        first_name, second_name = generateNames()
+        arrivalTime = previousAT + previousIAT
+        ri = random.random()
+        leftService = False if random.random() < 0.95 else True
+        return Patient(first_name + ' ' + second_name, arrivalTime, ri, self.calculateIntervalTime(5, ri), leftService, 1) 
 
-    
-def createPatient(previousAT, previousIAT):
-    first_name, second_name = generateNames()
-    arrivalTime = previousAT + previousIAT
-    ri = random.random()
-    leftService = False if random.random() < 0.95 else True
-    return Patient(first_name + ' ' + second_name, arrivalTime, ri, calculateIntervalTime(5, ri), leftService, 1)
+    def calculateIntervalTime(self, const, ri):
+        return -math.log(1 - ri) / const
 
-def calculateIntervalTime(const, ri):
-    return - math.log(1 - ri) / const
-
-def addTimeToServer(server, ATPatient, previousETTotal):
-    if(ATPatient == 0):
-        startTime = 0
-    else: 
-        startTime = max(ATPatient, previousETTotal)
-    ri = random.random()
-    exitTime = calculateIntervalTime(6, ri)
-    exitTimeTotal = exitTime + startTime
-    server.addTime(startTime,ri,exitTime,exitTimeTotal)
-    return exitTimeTotal
+    def addTimeToServer(self, server, ATPatient, previousETTotal):  
+        if ATPatient == 0:  
+            startTime = 0
+        else: 
+            startTime = max(ATPatient, previousETTotal)
+        ri = random.random()
+        exitTime = self.calculateIntervalTime(6, ri)  
+        exitTimeTotal = exitTime + startTime
+        server.addTime(startTime, ri, exitTime, exitTimeTotal)
+        return exitTimeTotal
 
 if __name__ == "__main__":
-    simulation()
+    Simulation(5)
