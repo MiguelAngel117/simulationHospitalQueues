@@ -1,6 +1,13 @@
+from helpers.generateNames import generateNames
+import numpy as np
+
 class Patient:
-    def __init__(self, name, arrivalTime:0, ri:0, intervalArrivalTime:0):
-        self.name = name
-        self.arrivalTime = arrivalTime
-        self.ri = ri
-        self.intervalArrivalTime = intervalArrivalTime
+    def __init__(self, arrival_time, service_rate):
+        self.name = " ".join(generateNames())
+        self.arrival_time = arrival_time
+        self.service_time = self.generate_service_time(service_rate)
+        self.start_time = None
+        self.end_time = None
+
+    def generate_service_time(self, rate):
+        return np.random.exponential(1 / rate)

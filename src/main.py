@@ -1,68 +1,66 @@
-import math
-import random
-from models.Server import Server
-from models.Patient import Patient
-from models.WaitQueue import WaitQueue
-from helpers.generateNames import generateNames
+import queue
+import threading
+import numpy as np
+from models.patient import Patient
+from models.server import Server1, Server2, Server4
 
-class Simulation:
-    def __init__(self, numpatients):
-        self.activationQueue = WaitQueue()
-        self.simulation(numpatients)
-        
+def exp_time(rate):
+    return np.random.exponential(1 / rate)
 
-    def simulation(self, numpatients): 
-        activationServer = Server("Modulo de Activación de Citas")
-        lastTime = 0
-        for i in range(numpatients):
-            if(i == 0):
-                patient = self.createPatient(0,0)
-                self.activationQueue.addPatient(patient)
-                lastTime = self.addTimeToServer(activationServer, patient.arrivalTime, 0)
-            else:
-                previousPatient = self.activationQueue.patients[-1]
-                patient = self.createPatient(previousPatient.arrivalTime, previousPatient.intervalArrivalTime)
-                self.activationQueue.addPatient(patient)
-                lastTime = self.addTimeToServer(activationServer, patient.arrivalTime, lastTime)
-        
-        
-        timesServer = list(activationServer.times)
-        patients = list(self.activationQueue.patients)
-        for patient in patients:
-            print('--------------PATIENTS------------------')
-            print(patient.name)
-            print(patient.arrivalTime)
-            print(patient.ri)
-            print(patient.intervalArrivalTime)
-        
-        for time in timesServer:
-            print('--------------SERVER------------------')
-            print(time.startTime)
-            print(time.ri)
-            print(time.exitTime)
-            print(time.exitTimeTotal)
-            
-    def createPatient(self, previousAT, previousIAT): 
-        first_name, second_name = generateNames()
-        arrivalTime = previousAT + previousIAT
-        ri = random.random()
-        return Patient(first_name + ' ' + second_name, arrivalTime, ri, self.calculateIntervalTime(5, ri)) 
+def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_rate_3):
+    queue_2 = queue.PriorityQueue()
+    queue_3 = queue.PriorityQueue()
+    global_clock = [0]
 
-    def calculateIntervalTime(self, const, ri):
-        return -math.log(1 - ri) / const
+    server_1 = Server1(service_rate_1, global_clock)
+    server_2 = Server2(service_rate_2, global_clock, 2)
+    server_3 = Server2(service_rate_2, global_clock, 3)
+    server_4 = Server4(service_rate_3, global_clock)
 
-    def addTimeToServer(self, server, ATPatient, previousETTotal):  
-        if ATPatient == 0:  
-            startTime = 0
-        else: 
-            startTime = max(ATPatient, previousETTotal)
-        ri = random.random()
-        exitTime = self.calculateIntervalTime(6, ri)  
-        exitTimeTotal = exitTime + startTime
-        server.addTime(startTime, ri, exitTime, exitTimeTotal)
-        return exitTimeTotal
+    patients = []
+    arrival_time = 0
+    for i in range(n):
+        if i == 0:
+            arrival_time = 0
+        else:
+            interarrival_time = exp_time(arrival_rate)
+            arrival_time += interarrival_time
+        patient = Patient(arrival_time, service_rate_1)
+        patients.append(patient)
+
+    server_1_thread = threading.Thread(target=server_1.process_patients, args=(patients, queue_2))
+    server_1_thread.start()
+
+    server_2_thread = threading.Thread(target=server_2.process_patients, args=(queue_2, queue_3))
+    server_3_thread = threading.Thread(target=server_3.process_patients, args=(queue_2, queue_3))
+    server_2_thread.start()
+    server_3_thread.start()
+
+    server_4_thread = threading.Thread(target=server_4.process_patients, args=(queue_3,))
+    server_4_thread.start()
+
+    server_1_thread.join()
+
+    print("\nResumen del Servidor 1:")
+    for log in server_1.log:
+        print(f"{log[0]} llegó a las {log[1]:.3f}, empezó a ser atendido a las {log[2]:.3f} y terminó a las {log[3]:.3f}")
+
+    print("\nResumen del Servidor 2:")
+    for log in server_2.log:
+        print(f"{log[0]} llegó a las {log[1]:.3f}, empezó a ser atendido a las {log[2]:.3f} y terminó a las {log[3]:.3f}")
+
+    print("\nResumen del Servidor 3:")
+    for log in server_3.log:
+        print(f"{log[0]} llegó a las {log[1]:.3f}, empezó a ser atendido a las {log[2]:.3f} y terminó a las {log[3]:.3f}")
+
+    print("\nResumen del Servidor 4:")
+    for log in server_4.log:
+        print(f"{log[0]} llegó a las {log[1]:.3f}, empezó a ser atendido a las {log[2]:.3f} y terminó a las {log[3]:.3f}")
 
 if __name__ == "__main__":
-    print('Ingrese el numero de pacientes')
-    num = int(input())
-    Simulation(num)
+    n = int(input("Ingrese el número de pacientes: "))
+    arrival_rate = 5  # tasa de llegada (lambda)
+    service_rate_1 = 6  # tasa de servicio del primer servidor (miu)
+    service_rate_2 = 2  # tasa de servicio de los segundos servidores (miu)
+    service_rate_3 = 2  # tasa de servicio del cuarto servidor (miu)
+    simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_rate_3)
