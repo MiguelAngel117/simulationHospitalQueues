@@ -6,6 +6,17 @@ import tkinter as tk
 from tkinter import ttk
 from models.patient import Patient
 from models.server import Server1, Server2, Server4
+import sys
+
+class PrintRedirector:
+    def __init__(self, textbox):
+        self.textbox = textbox
+
+    def write(self, text):
+        self.textbox.configure(state=tk.NORMAL)
+        self.textbox.insert(tk.END, text)
+        self.textbox.configure(state=tk.DISABLED)
+        self.textbox.see(tk.END)
 
 def exp_time(rate):
     ri = np.random.random()
@@ -95,6 +106,9 @@ def start_simulation():
         server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []
         current_server_log = []
 
+        # Redirigir la salida estándar al textbox
+        sys.stdout = PrintRedirector(message_box)
+
         # Iniciar la simulación en un hilo separado
         simulation_thread = threading.Thread(target=run_simulation)
         simulation_thread.start()
@@ -149,6 +163,10 @@ if __name__ == "__main__":
 
     btn_server_4 = tk.Button(button_frame, text="Servidor 4", command=show_server_4)
     btn_server_4.pack(side="left", padx=5)
+
+    # Crear un campo de texto para mostrar los mensajes
+    message_box = tk.Text(root, height=10, width=80)
+    message_box.pack()
 
     # Actualizar la tabla periódicamente
     root.after(1000, update_table)
