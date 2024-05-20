@@ -61,8 +61,8 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
 def display_table(log, table):
     for row in table.get_children():
         table.delete(row)
-    for log_entry in log:
-        table.insert("", "end", values=log_entry)
+    for row_id, log_entry in enumerate(log, start=1):
+        table.insert("", "end", values=(row_id,) + log_entry)
 
 def update_table():
     if current_server_log:
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     btn_server_4.pack(side="left", padx=5)
 
     # Crear un campo de texto para mostrar los mensajes
-    message_box = tk.Text(root, height=10, width=80)
+    message_box = tk.Text(root, height=30, width=160)
     message_box.pack()
 
     # Actualizar la tabla periódicamente
