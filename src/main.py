@@ -18,7 +18,7 @@ class PrintRedirector:
         self.textbox.configure(state=tk.DISABLED)
         self.textbox.see(tk.END)
 
-def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_rate_3):
+def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4):
     queue_2 = queue.PriorityQueue()
     queue_3 = queue.PriorityQueue()
     global_clock = [0]
@@ -57,11 +57,15 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
 def display_table(log, table):
     for row in table.get_children():
         table.delete(row)
-    for row_id, log_entry in enumerate(log, start=1):
-        table.insert("", "end", values=(row_id,) + log_entry)
+    if not log:
+        # Si el log está vacío, insertar una fila con "N/A" en todas las columnas
+        table.insert("", "end", values=("N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"))
+    else:
+        for row_id, log_entry in enumerate(log, start=1):
+            table.insert("", "end", values=(row_id,) + log_entry)
 
 def update_table():
-    if current_server_log:
+    if current_server_log is not None:
         display_table(current_server_log, table)
     root.after(1000, update_table)
 
@@ -86,7 +90,7 @@ def run_simulation():
     try:
         num_patients = int(entry_patients.get())
         server_1_log, server_2_log, server_3_log, server_4_log = simulate_hospital(
-            num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3
+            num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4
         )
     except ValueError:
         print("Error: El número de pacientes debe ser un entero.")
@@ -118,14 +122,14 @@ if __name__ == "__main__":
     service_rate_3 = 2 # tasa de servicio del tercer servidor (miu)
     service_rate_4 = 7  # tasa de servicio del cuarto servidor (miu)
 
-    current_server_log = []
+    current_server_log = None
 
     # Crear la interfaz gráfica
     root = tk.Tk()
     root.title("Simulación del Hospital")
 
     frame = tk.Frame(root)
-    frame.pack(pady=20)
+    frame.pack(pady=10)
 
     lbl_patients = tk.Label(frame, text="Número de pacientes:")
     lbl_patients.pack(side="left")
@@ -137,7 +141,7 @@ if __name__ == "__main__":
     btn_start.pack(side="left", padx=5)
 
     table_frame = tk.Frame(root)
-    table_frame.pack(pady=20)
+    table_frame.pack(pady=5)
 
     table = ttk.Treeview(table_frame, columns=("ID", "Paciente", "Llegada", "Inicio", "Servicio", "Fin", "Espera"), show="headings")
     table.heading("ID", text="ID")
@@ -150,7 +154,7 @@ if __name__ == "__main__":
     table.pack()
 
     button_frame = tk.Frame(root)
-    button_frame.pack(pady=20)
+    button_frame.pack(pady=10)
 
     btn_server_1 = tk.Button(button_frame, text="Servidor 1", command=show_server_1)
     btn_server_1.pack(side="left", padx=5)
@@ -164,11 +168,8 @@ if __name__ == "__main__":
     btn_server_4 = tk.Button(button_frame, text="Servidor 4", command=show_server_4)
     btn_server_4.pack(side="left", padx=5)
 
-    # Crear un campo de texto para mostrar los mensajes
-    message_box = tk.Text(root, height=30, width=160)
-    message_box.pack()
-
-    # Actualizar la tabla periódicamente
+    message_box = tk.Text(root, height=15, width=140)
+    message_box.pack(pady=10)
     root.after(1000, update_table)
 
     root.mainloop()
