@@ -142,11 +142,13 @@ if __name__ == "__main__":
     table_frame = tk.Frame(root)
     table_frame.pack(pady=20)
 
-    table = ttk.Treeview(table_frame, columns=("Paciente", "Llegada", "Inicio", "Fin"), show="headings")
+    table = ttk.Treeview(table_frame, columns=("ID", "Paciente", "Llegada", "Inicio", "Fin", "Espera"), show="headings")
+    table.heading("ID", text="ID")
     table.heading("Paciente", text="Paciente")
     table.heading("Llegada", text="Llegada")
     table.heading("Inicio", text="Inicio")
     table.heading("Fin", text="Fin")
+    table.heading("Espera", text="Espera")
     table.pack()
 
     button_frame = tk.Frame(root)

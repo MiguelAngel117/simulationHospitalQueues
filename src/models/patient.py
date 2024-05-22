@@ -10,6 +10,7 @@ class Patient:
         self.service_time3 = self.generate_service_time(rate3)
         self.start_time = None
         self.end_time = None
+        self.waiting_time = 0 
 
     def generate_service_time(self, rate):
         ri = np.random.random()
