@@ -9,14 +9,14 @@ class Server1:
         self.free_time = 0
         self.rate = rate
 
-    def process_patients(self, patients, queue_2):
+    def process_patients(self, patients, queue_2, listRi):
         for patient in patients:
             if patient.arrival_time >= self.free_time:
                 patient.start_time = patient.arrival_time
             else:
                 patient.start_time = self.free_time
                 patient.waiting_time = patient.start_time - patient.arrival_time  
-            service_time = exp_time(self.rate)
+            service_time = exp_time(self.rate, listRi.get_next_ri())
             patient.end_time = patient.start_time + service_time
             self.free_time = patient.end_time
             queue_2.put((patient.end_time, patient.name))
@@ -34,11 +34,11 @@ class Server2:
         self.rate = rate
         self.server_id = server_id
 
-    def process_patients(self, queue_2, queue_3):
+    def process_patients(self, queue_2, queue_3, listRi):
         while True:
             end_time_1, patient_name = queue_2.get()
             start_time_2 = max(self.free_time, end_time_1)
-            service_time = exp_time(self.rate)
+            service_time = exp_time(self.rate, listRi.get_next_ri())
             end_time_2 = start_time_2 + service_time
             self.free_time = end_time_2
             waiting_time_2 = start_time_2 - end_time_1
@@ -57,11 +57,11 @@ class Server4:
         self.free_time = 0
         self.rate = rate
 
-    def process_patients(self, queue_3):
+    def process_patients(self, queue_3, listRi):
         while True:
             end_time_2 ,patient_name = queue_3.get()
             start_time_3 = max(self.free_time, end_time_2)
-            service_time = exp_time(self.rate)
+            service_time = exp_time(self.rate, listRi.get_next_ri())
             end_time_3 = start_time_3 + service_time
             self.free_time = end_time_3
             waiting_time_3 = start_time_3 - end_time_2

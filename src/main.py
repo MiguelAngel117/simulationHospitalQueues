@@ -1,9 +1,9 @@
 from models.server import Server1, Server2, Server4
+from helpers.generateRi import ReduceLinear
 from helpers.expTime import exp_time
 from models.patient import Patient
 from tkinter import ttk
 import tkinter as tk
-import numpy as np
 import threading
 import queue
 import sys
@@ -25,11 +25,12 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
     
     patients = []
     arrival_time = 0
+    listRi = ReduceLinear(n * 4)
     for i in range(n):
         if i == 0:
             arrival_time = 0
         else:
-            interarrival_time = exp_time(arrival_rate)
+            interarrival_time = exp_time(arrival_rate, listRi.get_next_ri())
             arrival_time += interarrival_time
         patient = Patient(arrival_time)
         patients.append(patient)
@@ -39,15 +40,15 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
     server_3 = Server2(global_clock, 3, service_rate_3)
     server_4 = Server4(global_clock, service_rate_4)
     
-    server_1_thread = threading.Thread(target=server_1.process_patients, args=(patients, queue_2))
+    server_1_thread = threading.Thread(target=server_1.process_patients, args=(patients, queue_2, listRi))
     server_1_thread.start()
 
-    server_2_thread = threading.Thread(target=server_2.process_patients, args=(queue_2, queue_3))
-    server_3_thread = threading.Thread(target=server_3.process_patients, args=(queue_2, queue_3))
+    server_2_thread = threading.Thread(target=server_2.process_patients, args=(queue_2, queue_3, listRi))
+    server_3_thread = threading.Thread(target=server_3.process_patients, args=(queue_2, queue_3, listRi))
     server_2_thread.start()
     server_3_thread.start()
 
-    server_4_thread = threading.Thread(target=server_4.process_patients, args=(queue_3,))
+    server_4_thread = threading.Thread(target=server_4.process_patients, args=(queue_3,listRi,))
     server_4_thread.start()
     
     server_1_thread.join()
@@ -59,7 +60,7 @@ def display_table(log, table):
         table.delete(row)
     if not log:
         # Si el log está vacío, insertar una fila con "N/A" en todas las columnas
-        table.insert("", "end", values=("N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"))
+        table.insert("", "end", values=("0", "0", "0", "0", "0", "0", "0"))
     else:
         for row_id, log_entry in enumerate(log, start=1):
             table.insert("", "end", values=(row_id,) + log_entry)
@@ -118,7 +119,7 @@ def start_simulation():
 if __name__ == "__main__":
     arrival_rate = 5  # tasa de llegada (lambda)
     service_rate_1 = 6  # tasa de servicio del primer servidor (miu)
-    service_rate_2 = 2  # tasa de servicio del segundos servidor (miu)
+    service_rate_2 = 2  # tasa de servicio del segundo servidor (miu)
     service_rate_3 = 2 # tasa de servicio del tercer servidor (miu)
     service_rate_4 = 7  # tasa de servicio del cuarto servidor (miu)
 
