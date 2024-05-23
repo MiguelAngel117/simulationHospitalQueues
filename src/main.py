@@ -59,13 +59,11 @@ def display_table(log, table):
     for row in table.get_children():
         table.delete(row)
     if not log:
-        # Si el log está vacío, insertar una fila con "N/A" en todas las columnas
         table.insert("", "end", values=("0", "0", "0", "0", "0", "0", "0"))
     else:
         for row_id, log_entry in enumerate(log, start=1):
             formatted_log_entry = tuple(f"{value:.5f}" if isinstance(value, float) else value for value in log_entry)
             table.insert("", "end", values=(row_id,) + formatted_log_entry)
-
 
 def update_table():
     if current_server_log is not None:
@@ -102,49 +100,50 @@ def run_simulation():
 
 def start_simulation():
     try:
-        # Limpiar la tabla y las variables globales
         for row in table.get_children():
             table.delete(row)
         global server_1_log, server_2_log, server_3_log, server_4_log, current_server_log
         server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []
         current_server_log = []
 
-        # Redirigir la salida estándar al textbox
         sys.stdout = PrintRedirector(message_box)
 
-        # Iniciar la simulación en un hilo separado
         simulation_thread = threading.Thread(target=run_simulation)
         simulation_thread.start()
     except Exception as e:
         print(f"Error al iniciar la simulación: {e}")
 
 if __name__ == "__main__":
-    arrival_rate = 5  # tasa de llegada (lambda)
-    service_rate_1 = 6  # tasa de servicio del primer servidor (miu)
-    service_rate_2 = 2  # tasa de servicio del segundo servidor (miu)
-    service_rate_3 = 2 # tasa de servicio del tercer servidor (miu)
-    service_rate_4 = 7  # tasa de servicio del cuarto servidor (miu)
+    arrival_rate = 5
+    service_rate_1 = 6
+    service_rate_2 = 2
+    service_rate_3 = 2
+    service_rate_4 = 7
 
     current_server_log = None
 
-    # Crear la interfaz gráfica
     root = tk.Tk()
     root.title("Simulación del Hospital")
+    root.configure(bg="#f0f0f0")
 
-    frame = tk.Frame(root)
+    frame = tk.Frame(root, bg="#f0f0f0")
     frame.pack(pady=10)
 
-    lbl_patients = tk.Label(frame, text="Número de pacientes:")
+    lbl_patients = tk.Label(frame, text="Número de pacientes:", bg="#f0f0f0")
     lbl_patients.pack(side="left")
 
     entry_patients = tk.Entry(frame)
     entry_patients.pack(side="left", padx=5)
 
-    btn_start = tk.Button(frame, text="Iniciar", command=start_simulation)
+    btn_start = tk.Button(frame, text="Iniciar", command=start_simulation, bg="#4caf50", fg="white")
     btn_start.pack(side="left", padx=5)
 
-    table_frame = tk.Frame(root)
+    table_frame = tk.Frame(root, bg="#f0f0f0")
     table_frame.pack(pady=5)
+
+    style = ttk.Style()
+    style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"), foreground="#4caf50")
+    style.configure("Treeview", font=("Helvetica", 10))
 
     table = ttk.Treeview(table_frame, columns=("ID", "Paciente", "Llegada", "Inicio", "Servicio", "Fin", "Espera"), show="headings")
     table.heading("ID", text="ID")
@@ -156,23 +155,23 @@ if __name__ == "__main__":
     table.heading("Espera", text="Espera")
     table.pack()
 
-    button_frame = tk.Frame(root)
+    button_frame = tk.Frame(root, bg="#f0f0f0")
     button_frame.pack(pady=10)
 
-    btn_server_1 = tk.Button(button_frame, text="Servidor 1", command=show_server_1)
+    btn_server_1 = tk.Button(button_frame, text="Servidor 1", command=show_server_1, bg="#2196f3", fg="white")
     btn_server_1.pack(side="left", padx=5)
 
-    btn_server_2 = tk.Button(button_frame, text="Servidor 2", command=show_server_2)
+    btn_server_2 = tk.Button(button_frame, text="Servidor 2", command=show_server_2, bg="#2196f3", fg="white")
     btn_server_2.pack(side="left", padx=5)
 
-    btn_server_3 = tk.Button(button_frame, text="Servidor 3", command=show_server_3)
+    btn_server_3 = tk.Button(button_frame, text="Servidor 3", command=show_server_3, bg="#2196f3", fg="white")
     btn_server_3.pack(side="left", padx=5)
 
-    btn_server_4 = tk.Button(button_frame, text="Servidor 4", command=show_server_4)
+    btn_server_4 = tk.Button(button_frame, text="Servidor 4", command=show_server_4, bg="#2196f3", fg="white")
     btn_server_4.pack(side="left", padx=5)
 
-    message_box = tk.Text(root, height=15, width=140)
+    message_box = tk.Text(root, height=15, width=140, bg="#e8eaf6")
     message_box.pack(pady=10)
-    root.after(1000, update_table)
 
+    root.after(1000, update_table)
     root.mainloop()
