@@ -25,7 +25,7 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
     
     patients = []
     arrival_time = 0
-    listRi = ReduceLinear(n * 4)
+    listRi = ReduceLinear(n * 5)
     for i in range(n):
         if i == 0:
             arrival_time = 0
@@ -63,7 +63,9 @@ def display_table(log, table):
         table.insert("", "end", values=("0", "0", "0", "0", "0", "0", "0"))
     else:
         for row_id, log_entry in enumerate(log, start=1):
-            table.insert("", "end", values=(row_id,) + log_entry)
+            formatted_log_entry = tuple(f"{value:.5f}" if isinstance(value, float) else value for value in log_entry)
+            table.insert("", "end", values=(row_id,) + formatted_log_entry)
+
 
 def update_table():
     if current_server_log is not None:
