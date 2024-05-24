@@ -1,4 +1,4 @@
-from models.server import Server1, Server2, Server4
+from models.server import ActivationService, AttentionService, DrugService
 from helpers.generateRi import ReduceLinear
 from helpers.expTime import exp_time
 from models.patient import Patient
@@ -35,10 +35,10 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
         patient = Patient(arrival_time)
         queue_1.append(patient)
         
-    server_1 = Server1(global_clock, service_rate_1)
-    server_2 = Server2(global_clock, 2, service_rate_2)
-    server_3 = Server2(global_clock, 3, service_rate_3)
-    server_4 = Server4(global_clock, service_rate_4)
+    server_1 = ActivationService(global_clock, service_rate_1)
+    server_2 = AttentionService(global_clock, 2, service_rate_2)
+    server_3 = AttentionService(global_clock, 3, service_rate_3)
+    server_4 = DrugService(global_clock, service_rate_4)
     
     server_1_thread = threading.Thread(target=server_1.process_patients, args=(queue_1, queue_2, listRi))
     server_1_thread.start()

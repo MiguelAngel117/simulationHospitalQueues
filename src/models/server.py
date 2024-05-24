@@ -1,7 +1,7 @@
 import time
 from helpers.expTime import exp_time
 
-class Server1:
+class ActivationService:
     def __init__(self, global_clock, rate):
         self.global_clock = global_clock
         self.log = []
@@ -24,7 +24,7 @@ class Server1:
             self.global_clock[0] = max(self.global_clock[0], patient.end_time)
             time.sleep(service_time * 10)
 
-class Server2:
+class AttentionService:
     def __init__(self, global_clock, server_id, rate):
         self.global_clock = global_clock
         self.log = []
@@ -49,7 +49,7 @@ class Server2:
             self.global_clock[0] = max(self.global_clock[0], end_time_2)
             time.sleep(service_time * 10)
 
-class Server4:
+class DrugService:
     def __init__(self, global_clock, rate):
         self.global_clock = global_clock
         self.log = []
