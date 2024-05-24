@@ -20,26 +20,37 @@ class PrintRedirector:
         self.textbox.see(tk.END)
 
 def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4):
+    """
+    Simula el funcionamiento de un hospital con múltiples servidores de atención.
+    Args:
+        n (int): Número de pacientes a simular.
+        arrival_rate (int): Tasa de llegada de pacientes.
+        service_rate_1, service_rate_2, service_rate_3, service_rate_4 (int): Tasas de servicio de los servidores.
+    Returns:
+        tuple: Registros de los servidores y colas de pacientes.
+    """
     queue_1 = []
     queue_2 = queue.PriorityQueue()
-    queue_3 = queue.PriorityQueue()
-    global_clock = [0]
-    arrival_time = 0
-    listRi = ReduceLinear(n * 5)
-    for i in range(n):
-        if i == 0:
-            arrival_time = 0
-        else:
-            interarrival_time = exp_time(arrival_rate, listRi.get_next_ri())
-            arrival_time += interarrival_time
-        patient = Patient(arrival_time)
-        queue_1.append(patient)
-        
+    queue_3 = queue.PriorityQueue() 
+    global_clock = [0]  # Inicializa el reloj global
+    arrival_time = 0  # Inicializa el tiempo de llegada
+    listRi = ReduceLinear(n * 5)  # Inicializa la lista de números aleatorios para la distribución exponencial
+    for i in range(n):  # Itera sobre el número de pacientes a simular
+        if i == 0:  # Si es el primer paciente
+            arrival_time = 0  # El tiempo de llegada es cero
+        else:  # Para los siguientes pacientes
+            interarrival_time = exp_time(arrival_rate, listRi.get_next_ri())  # Calcula el tiempo entre llegadas
+            arrival_time += interarrival_time  # Actualiza el tiempo de llegada
+        patient = Patient(arrival_time)  # Crea un paciente con el tiempo de llegada
+        queue_1.append(patient)  # Agrega al paciente a la cola 1
+
+    # Inicializa los servidores de atención con sus tasas de servicio respectivas
     server_1 = ActivationService(global_clock, service_rate_1)
     server_2 = AttentionService(global_clock, 2, service_rate_2)
     server_3 = AttentionService(global_clock, 3, service_rate_3)
     server_4 = DrugService(global_clock, service_rate_4)
-    
+
+    # Crea hilos para cada servidor y los inicia para procesar pacientes en paralelo
     server_1_thread = threading.Thread(target=server_1.process_patients, args=(queue_1, queue_2, listRi))
     server_1_thread.start()
 
@@ -50,12 +61,19 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
 
     server_4_thread = threading.Thread(target=server_4.process_patients, args=(queue_3, listRi,))
     server_4_thread.start()
-    
-    server_1_thread.join()
 
+    server_1_thread.join()  # Espera a que el hilo del servidor 1 termine
+
+    # Devuelve los registros de los servidores y la cola 1
     return server_1.log, server_2.log, server_3.log, server_4.log, queue_1
 
 def display_table(log, table):
+    """
+    Muestra los registros de los servidores en una tabla de la interfaz gráfica.
+    Args:
+        log (list): Registros de los servidores.
+        table (ttk.Treeview): Widget de tabla donde se mostrarán los registros.
+    """
     for row in table.get_children():
         table.delete(row)
     if not log:
@@ -86,43 +104,49 @@ def show_server_4():
     global current_server_log
     current_server_log = server_4_log
 
+# Método para ejecutar la simulación del hospital
 def run_simulation():
     global server_1_log, server_2_log, server_3_log, server_4_log, queue_1
     try:
-        num_patients = int(entry_patients.get())
-        if(num_patients <= 0):
+        num_patients = int(entry_patients.get())  # Obtiene el número de pacientes ingresado por el usuario
+        if(num_patients <= 0):  # Verifica si el número de pacientes es válido
             print("Ingrese un valor mayor a 0")
+        # Llama a la función de simulación del hospital y asigna los resultados a variables globales
         server_1_log, server_2_log, server_3_log, server_4_log, queue_1 = simulate_hospital(
-        num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4)
+            num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4)
     except ValueError:
-        print("El número de pacientes debe ser un entero.")
+        print("El número de pacientes debe ser un entero.")  # Maneja el error si el usuario ingresa un valor no entero
     except Exception as e:
-        print(f"Error inesperado: {e}")
+        print(f"Error inesperado: {e}")  # Maneja otros errores inesperados
 
+# Método para iniciar la simulación
 def start_simulation():
     try:
         for row in table.get_children():
-            table.delete(row)
+            table.delete(row)  # Borra cualquier fila existente en la tabla
         global server_1_log, server_2_log, server_3_log, server_4_log, current_server_log
-        server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []
-        current_server_log = []
+        server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []  # Reinicia los registros de los servidores
+        current_server_log = []  # Reinicia el registro actual
         
-        # Limpiar el message_box antes de redirigir la salida
+        # Limpia el widget de texto antes de redirigir la salida
         message_box.configure(state=tk.NORMAL)
         message_box.delete(1.0, tk.END)
         message_box.configure(state=tk.DISABLED)
         
-        sys.stdout = PrintRedirector(message_box)
+        sys.stdout = PrintRedirector(message_box)  # Redirige la salida estándar al widget de texto
 
+        # Crea un hilo para ejecutar la simulación en segundo plano
         simulation_thread = threading.Thread(target=run_simulation)
         simulation_thread.start()
     except Exception as e:
-        print(f"Error al iniciar la simulación: {e}")
+        print(f"Error al iniciar la simulación: {e}")  # Maneja errores al iniciar la simulación
 
+# Método para mostrar el gráfico de barras
 def show_graph():
-    patient_names = [patient.name for patient in queue_1]
-    total_service_times = [patient.total_time - patient.arrival_time for patient in queue_1]
-
+    patient_names = [patient.name for patient in queue_1]  # Obtiene los nombres de los pacientes en la cola
+    total_service_times = [patient.total_time - patient.arrival_time for patient in queue_1]  # Calcula los tiempos totales de servicio
+    
+    # Crea el gráfico de barras utilizando matplotlib
     fig, ax = plt.subplots(figsize=(10, 6))
     bars = ax.bar(patient_names, total_service_times, color='skyblue')
     ax.set_xlabel('Pacientes')
@@ -130,6 +154,7 @@ def show_graph():
     ax.set_title('Comparación del Tiempo Total de Servicio por Paciente')
     ax.set_xticklabels(patient_names, rotation=45, ha="right")
 
+    # Agrega etiquetas a las barras con los tiempos de servicio
     for bar in bars:
         yval = bar.get_height()
         ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.2f}', ha='center', va='bottom')
@@ -137,12 +162,13 @@ def show_graph():
     plt.tight_layout()
     plt.show()
 
+
 if __name__ == "__main__":
-    arrival_rate = 5
-    service_rate_1 = 6
-    service_rate_2 = 2
-    service_rate_3 = 2
-    service_rate_4 = 7
+    arrival_rate = 5  # tasa de llegada (lambda)
+    service_rate_1 = 6  # tasa de servicio del primer servidor (miu)
+    service_rate_2 = 2  # tasa de servicio del segundo servidor (miu)
+    service_rate_3 = 2  # tasa de servicio del tercer servidor (miu)
+    service_rate_4 = 4  # tasa de servicio del cuarto servidor (miu)
 
     current_server_log = None
 
