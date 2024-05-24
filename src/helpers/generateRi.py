@@ -17,6 +17,8 @@ class ReduceLinear:
     def generate_numbers_ri(self, quantity):
         for _ in range(quantity):
             random_number = self.generate_ri()
+            if random_number > 1:
+                print(f"Error: ri is greater than 1. ri = {random_number}")
             self.list_ri.append(random_number)
 
     def generate_ri(self):

@@ -7,6 +7,7 @@ import tkinter as tk
 import threading
 import queue
 import sys
+import matplotlib.pyplot as plt
 
 class PrintRedirector:
     def __init__(self, textbox):
@@ -19,11 +20,10 @@ class PrintRedirector:
         self.textbox.see(tk.END)
 
 def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4):
+    queue_1 = []
     queue_2 = queue.PriorityQueue()
     queue_3 = queue.PriorityQueue()
     global_clock = [0]
-    
-    patients = []
     arrival_time = 0
     listRi = ReduceLinear(n * 5)
     for i in range(n):
@@ -33,14 +33,14 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
             interarrival_time = exp_time(arrival_rate, listRi.get_next_ri())
             arrival_time += interarrival_time
         patient = Patient(arrival_time)
-        patients.append(patient)
+        queue_1.append(patient)
         
     server_1 = Server1(global_clock, service_rate_1)
     server_2 = Server2(global_clock, 2, service_rate_2)
     server_3 = Server2(global_clock, 3, service_rate_3)
     server_4 = Server4(global_clock, service_rate_4)
     
-    server_1_thread = threading.Thread(target=server_1.process_patients, args=(patients, queue_2, listRi))
+    server_1_thread = threading.Thread(target=server_1.process_patients, args=(queue_1, queue_2, listRi))
     server_1_thread.start()
 
     server_2_thread = threading.Thread(target=server_2.process_patients, args=(queue_2, queue_3, listRi))
@@ -48,12 +48,12 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
     server_2_thread.start()
     server_3_thread.start()
 
-    server_4_thread = threading.Thread(target=server_4.process_patients, args=(queue_3,listRi,))
+    server_4_thread = threading.Thread(target=server_4.process_patients, args=(queue_3, listRi,))
     server_4_thread.start()
     
     server_1_thread.join()
 
-    return server_1.log, server_2.log, server_3.log, server_4.log
+    return server_1.log, server_2.log, server_3.log, server_4.log, queue_1
 
 def display_table(log, table):
     for row in table.get_children():
@@ -87,12 +87,13 @@ def show_server_4():
     current_server_log = server_4_log
 
 def run_simulation():
-    global server_1_log, server_2_log, server_3_log, server_4_log
+    global server_1_log, server_2_log, server_3_log, server_4_log, queue_1
     try:
         num_patients = int(entry_patients.get())
-        server_1_log, server_2_log, server_3_log, server_4_log = simulate_hospital(
+        server_1_log, server_2_log, server_3_log, server_4_log, queue_1 = simulate_hospital(
             num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4
         )
+        
     except ValueError:
         print("Error: El número de pacientes debe ser un entero.")
     except Exception as e:
@@ -112,6 +113,24 @@ def start_simulation():
         simulation_thread.start()
     except Exception as e:
         print(f"Error al iniciar la simulación: {e}")
+
+def show_graph():
+    patient_names = [patient.name for patient in queue_1]
+    total_service_times = [patient.total_time - patient.arrival_time for patient in queue_1]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bars = ax.bar(patient_names, total_service_times, color='skyblue')
+    ax.set_xlabel('Pacientes')
+    ax.set_ylabel('Tiempo Total de Servicio')
+    ax.set_title('Comparación del Tiempo Total de Servicio por Paciente')
+    ax.set_xticklabels(patient_names, rotation=45, ha="right")
+
+    for bar in bars:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.2f}', ha='center', va='bottom')
+
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     arrival_rate = 5
@@ -169,6 +188,9 @@ if __name__ == "__main__":
 
     btn_server_4 = tk.Button(button_frame, text="Servidor 4", command=show_server_4, bg="#2196f3", fg="white")
     btn_server_4.pack(side="left", padx=5)
+
+    btn_show_graph = tk.Button(button_frame, text="Mostrar Gráfica", command=show_graph, bg="#f44336", fg="white")
+    btn_show_graph.pack(side="left", padx=5)
 
     message_box = tk.Text(root, height=15, width=140, bg="#e8eaf6")
     message_box.pack(pady=10)
