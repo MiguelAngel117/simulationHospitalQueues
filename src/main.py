@@ -90,12 +90,12 @@ def run_simulation():
     global server_1_log, server_2_log, server_3_log, server_4_log, queue_1
     try:
         num_patients = int(entry_patients.get())
+        if(num_patients <= 0):
+            print("Ingrese un valor mayor a 0")
         server_1_log, server_2_log, server_3_log, server_4_log, queue_1 = simulate_hospital(
-            num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4
-        )
-        
+        num_patients, arrival_rate, service_rate_1, service_rate_2, service_rate_3, service_rate_4)
     except ValueError:
-        print("Error: El número de pacientes debe ser un entero.")
+        print("El número de pacientes debe ser un entero.")
     except Exception as e:
         print(f"Error inesperado: {e}")
 
@@ -106,7 +106,12 @@ def start_simulation():
         global server_1_log, server_2_log, server_3_log, server_4_log, current_server_log
         server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []
         current_server_log = []
-
+        
+        # Limpiar el message_box antes de redirigir la salida
+        message_box.configure(state=tk.NORMAL)
+        message_box.delete(1.0, tk.END)
+        message_box.configure(state=tk.DISABLED)
+        
         sys.stdout = PrintRedirector(message_box)
 
         simulation_thread = threading.Thread(target=run_simulation)
