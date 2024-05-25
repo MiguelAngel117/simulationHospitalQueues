@@ -81,7 +81,7 @@ class AttentionService:
             patient.total_time = end_time_2  # Actualiza tiempo total de servicio para el paciente
             waiting_time_2 = start_time_2 - end_time_1  # Calcula tiempo de espera en la cola 2
             print(f"-->{patient_name} llega a la cola 2 a las {end_time_1:.3f}, es atendido por el servidor {self.server_id} a las {start_time_2:.3f} y termina a las {end_time_2:.3f}, tiempo servicio {service_time:.3f}\n")
-            if listRi.get_next_ri() < 0.25:  # Simula necesidad de medicamentos
+            if listRi.get_next_ri() < 0.70:  # Simula necesidad de medicamentos
                 queue_3.put((end_time_2, patient_name, patient))
                 print(f"#{patient_name} del servidor {self.server_id} necesita medicamentos y se dirige a la cola 3 a las {end_time_2:.3f}\n")
             self.log.append((patient_name, end_time_1, start_time_2, service_time, end_time_2, waiting_time_2))  # Registra evento

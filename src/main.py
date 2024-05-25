@@ -185,12 +185,11 @@ def show_bar_chart():
     plt.show()
 
 if __name__ == "__main__":
-    arrival_rate = 9  # tasa de llegada (lambda)
-    service_rate_1 = 6  # tasa de servicio del primer servidor (miu)
-    service_rate_2 = 4  # tasa de servicio del segundo servidor (miu)
-    service_rate_3 = 4  # tasa de servicio del tercer servidor (miu)
-    service_rate_4 = 6  # tasa de servicio del cuarto servidor (miu)
-
+    arrival_rate = 10  # tasa de llegada (lambda) 5
+    service_rate_1 = 6  # tasa de servicio del primer servidor (miu) 
+    service_rate_2 = 4  # tasa de servicio del segundo servidor (miu)2
+    service_rate_3 = 4  # tasa de servicio del tercer servidor (miu)2
+    service_rate_4 = 6  # tasa de servicio del cuarto servidor (miu)7
     current_server_log = None
 
     root = tk.Tk()
