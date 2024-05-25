@@ -125,7 +125,8 @@ def start_simulation():
             table.delete(row)  
         global server_1_log, server_2_log, server_3_log, server_4_log, current_server_log
         server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []  
-        current_server_log = []  
+        current_server_log = []
+        queue_1 = []
         
         # Limpia el widget de texto antes de redirigir la salida
         message_box.configure(state=tk.NORMAL)
@@ -246,7 +247,7 @@ if __name__ == "__main__":
     btn_scatter = tk.Button(btn_frame, text="Promedio tiempos", command=show_bar_chart, bg="#ff9800", fg="white")
     btn_scatter.pack(side="left", padx=5)
 
-    message_box = tk.Text(root, height=10, state=tk.DISABLED)
+    message_box = tk.Text(root, height=10, width=140, state=tk.DISABLED)
     message_box.pack(pady=10)
 
     root.after(1000, update_table)
