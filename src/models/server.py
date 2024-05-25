@@ -4,12 +4,30 @@ from helpers.expTime import exp_time
 # Clase para el servicio de activación
 class ActivationService:
     def __init__(self, global_clock, rate):
+        """
+            Constructor de la clase ActivationService.
+
+            Parámetros:
+            - global_clock: Reloj global para sincronización.
+            - rate: Tasa de servicio.
+        """
         self.global_clock = global_clock  # Reloj global para sincronización
         self.log = []  # Registro de eventos
         self.free_time = 0  # Tiempo libre para empezar a atender
         self.rate = rate  # Tasa de servicio
 
     def process_patients(self, patients, queue_2, listRi):
+        """
+            Procesa la llegada y atención de pacientes en el servicio de activación.
+
+            Parámetros:
+            - patients: Lista de pacientes que llegan al servicio.
+            - queue_2: Cola de espera para el siguiente servicio.
+            - listRi: Lista de números aleatorios para cálculos.
+
+            Regresa:
+            - None
+        """
         for patient in patients:
             if patient.arrival_time >= self.free_time:
                 patient.start_time = patient.arrival_time
@@ -28,6 +46,14 @@ class ActivationService:
 # Clase para el servicio de atención
 class AttentionService:
     def __init__(self, global_clock, server_id, rate):
+        """
+            Constructor de la clase AttentionService.
+
+            Parámetros:
+            - global_clock: Reloj global para sincronización.
+            - server_id: Identificador del servidor.
+            - rate: Tasa de servicio.
+        """
         self.global_clock = global_clock  # Reloj global para sincronización
         self.log = []  # Registro de eventos
         self.free_time = 0  # Tiempo libre para empezar a atender
@@ -35,6 +61,17 @@ class AttentionService:
         self.server_id = server_id  # Identificador del servidor
 
     def process_patients(self, queue_2, queue_3, listRi):
+        """
+            Procesa la atención de pacientes en el servicio de atención.
+
+            Parámetros:
+            - queue_2: Cola de espera para el servicio de atención.
+            - queue_3: Cola de espera para el servicio de medicamentos.
+            - listRi: Lista de números aleatorios para cálculos.
+
+            Regresa:
+            - None
+        """
         while True:
             end_time_1, patient_name, patient = queue_2.get()  # Obtiene paciente de la cola 2
             start_time_2 = max(self.free_time, end_time_1)  # Calcula tiempo de inicio de servicio
@@ -54,12 +91,29 @@ class AttentionService:
 # Clase para el servicio de medicamentos
 class DrugService:
     def __init__(self, global_clock, rate):
+        """
+            Constructor de la clase DrugService.
+
+            Parámetros:
+            - global_clock: Reloj global para sincronización.
+            - rate: Tasa de servicio.
+        """
         self.global_clock = global_clock  # Reloj global para sincronización
         self.log = []  # Registro de eventos
         self.free_time = 0  # Tiempo libre para empezar a atender
         self.rate = rate  # Tasa de servicio
 
     def process_patients(self, queue_3, listRi):
+        """
+            Procesa la atención de pacientes en el servicio de medicamentos.
+
+            Parámetros:
+            - queue_3: Cola de espera para el servicio de medicamentos.
+            - listRi: Lista de números aleatorios para cálculos.
+
+            Regresa:
+            - None
+        """
         while True:
             end_time_2, patient_name, patient = queue_3.get()  # Obtiene paciente de la cola 3
             start_time_3 = max(self.free_time, end_time_2)  # Calcula tiempo de inicio de servicio
