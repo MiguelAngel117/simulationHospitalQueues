@@ -68,15 +68,20 @@ def simulate_hospital(n, arrival_rate, service_rate_1, service_rate_2, service_r
 
     return server_1.log, server_2.log, server_3.log, server_4.log, queue_1
 
-def display_table(log, table):
+def display_table(log, table, server_label, server_name):
     """
     Muestra los registros de los servidores en una tabla de la interfaz gráfica.
     Args:
         log (list): Registros de los servidores.
         table (ttk.Treeview): Widget de tabla donde se mostrarán los registros.
+        server_label (tk.Label): Etiqueta para mostrar el nombre del servidor.
+        server_name (str): Nombre del servidor a mostrar.
     """
     for row in table.get_children():
         table.delete(row)
+    
+    server_label.config(text=f"--->{server_name}<---")
+
     if not log:
         table.insert("", "end", values=("0", "0", "0", "0", "0", "0", "0"))
     else:
@@ -86,24 +91,28 @@ def display_table(log, table):
 
 def update_table():
     if current_server_log is not None:
-        display_table(current_server_log, table)
+        display_table(current_server_log, table, server_label, current_server_name)
     root.after(1000, update_table)
 
 def show_server_1():
-    global current_server_log
+    global current_server_log, current_server_name
     current_server_log = server_1_log
+    current_server_name = "Servidor de Activación"
 
 def show_server_2():
-    global current_server_log
+    global current_server_log, current_server_name
     current_server_log = server_2_log
+    current_server_name = "Servidor de Atención - 1"
 
 def show_server_3():
-    global current_server_log
+    global current_server_log, current_server_name
     current_server_log = server_3_log
+    current_server_name = "Servidor de Atención - 2"
 
 def show_server_4():
-    global current_server_log
+    global current_server_log, current_server_name
     current_server_log = server_4_log
+    current_server_name = "Servidor de Medicamentos"
 
 def run_simulation():
     global server_1_log, server_2_log, server_3_log, server_4_log, queue_1
@@ -123,9 +132,10 @@ def start_simulation():
     try:
         for row in table.get_children():
             table.delete(row)  
-        global server_1_log, server_2_log, server_3_log, server_4_log, current_server_log
+        global server_1_log, server_2_log, server_3_log, server_4_log, current_server_log, current_server_name
         server_1_log, server_2_log, server_3_log, server_4_log = [], [], [], []  
         current_server_log = []
+        current_server_name = ""
         queue_1 = []
         
         # Limpia el widget de texto antes de redirigir la salida
@@ -167,8 +177,7 @@ def show_bar_chart():
     avg_arrival_time_first_server = sum(patient.interarrival_time for patient in queue_1) / len(queue_1) if queue_1 else 0
     
     labels = ['IAT Servidor 1','Servidor 1', 'Servidor 2', 'Servidor 3', 'Servidor 4']
-    values = [avg_arrival_time_first_server, avg_service_time_server_1, avg_service_time_server_2, avg_service_time_server_3,
-              avg_service_time_server_4]
+    values = [avg_arrival_time_first_server, avg_service_time_server_1, avg_service_time_server_2, avg_service_time_server_3, avg_service_time_server_4]
 
     plt.figure(figsize=(10, 6))
     bars = plt.bar(labels, values, color=['blue', 'orange', 'green', 'red', 'purple'])
@@ -177,7 +186,6 @@ def show_bar_chart():
     plt.title('Promedio de Tiempos de Atención por Servidor y Tiempo entre llegadas 1er Servidor')
     plt.xticks(rotation=45, ha='right')
 
-    # Agrega los valores encima de las barras
     for bar, value in zip(bars, values):
         plt.text(bar.get_x() + bar.get_width()/2, value, f'{value:.2f}', ha='center', va='bottom')
 
@@ -185,12 +193,13 @@ def show_bar_chart():
     plt.show()
 
 if __name__ == "__main__":
-    arrival_rate = 10  # tasa de llegada (lambda) 5
-    service_rate_1 = 6  # tasa de servicio del primer servidor (miu) 
-    service_rate_2 = 4  # tasa de servicio del segundo servidor (miu)2
-    service_rate_3 = 4  # tasa de servicio del tercer servidor (miu)2
-    service_rate_4 = 6  # tasa de servicio del cuarto servidor (miu)7
+    arrival_rate = 10
+    service_rate_1 = 6
+    service_rate_2 = 4
+    service_rate_3 = 4
+    service_rate_4 = 6
     current_server_log = None
+    current_server_name = ""
 
     root = tk.Tk()
     root.title("Simulación del Hospital")
@@ -214,6 +223,10 @@ if __name__ == "__main__":
     style = ttk.Style()
     style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"), foreground="#4caf50")
     style.configure("Treeview", font=("Helvetica", 10))
+
+    # Etiqueta para mostrar el nombre del servidor
+    server_label = tk.Label(table_frame, text="-->Nombre Servidor<-- ", bg="#f0f0f0", font=("Helvetica", 12, "bold"))
+    server_label.pack()
 
     table = ttk.Treeview(table_frame, columns=("ID", "Paciente", "Llegada", "Inicio", "Servicio", "Fin", "Espera"), show="headings")
     table.heading("ID", text="ID")
